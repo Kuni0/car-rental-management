@@ -1,0 +1,2210 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>拡張版代車管理システム</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .login-container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f5f5f5;
+        }
+        .login-form {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 350px;
+        }
+        .login-logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .login-form h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .main-container {
+            display: none;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #4c6ca0;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 22px;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .user-info span {
+            font-weight: bold;
+        }
+        .nav-tabs {
+            display: flex;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .nav-tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 15px;
+            font-weight: 500;
+            color: #495057;
+        }
+        .nav-tab.active {
+            color: #4c6ca0;
+            border-bottom: 3px solid #4c6ca0;
+            font-weight: bold;
+        }
+        .tab-content {
+            background-color: white;
+            padding: 20px;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .tab-pane {
+            display: none;
+        }
+        .tab-pane.active {
+            display: block;
+        }
+        .control-panel {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .search-box {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        input, select, button, textarea {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        select {
+            cursor: pointer;
+        }
+        button {
+            background-color: #4c6ca0;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            white-space: nowrap;
+        }
+        button:hover {
+            background-color: #3c5680;
+        }
+        button.secondary {
+            background-color: #6c757d;
+        }
+        button.secondary:hover {
+            background-color: #5a6268;
+        }
+        button.warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        button.warning:hover {
+            background-color: #e0a800;
+        }
+        button.danger {
+            background-color: #dc3545;
+        }
+        button.danger:hover {
+            background-color: #c82333;
+        }
+        button.success {
+            background-color: #28a745;
+        }
+        button.success:hover {
+            background-color: #218838;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f8f9fa;
+            position: sticky;
+            top: 0;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .status-available {
+            color: green;
+            font-weight: bold;
+        }
+        .status-loaned {
+            color: #ff9800;
+            font-weight: bold;
+        }
+        .status-maintenance {
+            color: red;
+            font-weight: bold;
+        }
+        .status-reserved {
+            color: #9c27b0;
+            font-weight: bold;
+        }
+        .badge {
+            padding: 5px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            display: inline-block;
+        }
+        .badge-repair {
+            background-color: #007bff;
+        }
+        .badge-purchase {
+            background-color: #28a745;
+        }
+        .badge-insurance {
+            background-color: #17a2b8;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 70%;
+            max-width: 900px;
+            border-radius: 8px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .form-row .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        .form-section {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+        }
+        .form-section h3 {
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .calendar-view {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+        }
+        .calendar-nav {
+            display: flex;
+            gap: 10px;
+        }
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .timeline-header {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+        }
+        .timeline-header-cell {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            font-weight: bold;
+            min-width: 100px;
+        }
+        .timeline-row {
+            display: flex;
+            border-bottom: 1px solid #eee;
+        }
+        .timeline-label {
+            width: 150px;
+            padding: 8px;
+            font-weight: bold;
+            border-right: 1px solid #ddd;
+        }
+        .timeline-cells {
+            display: flex;
+            flex: 1;
+            position: relative;
+        }
+        .timeline-event {
+            position: absolute;
+            height: 80%;
+            top: 10%;
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-size: 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: white;
+        }
+        .timeline-event.loaned {
+            background-color: #ff9800;
+        }
+        .timeline-event.maintenance {
+            background-color: #f44336;
+        }
+        .timeline-event.reserved {
+            background-color: #9c27b0;
+        }
+        .today-marker {
+            position: absolute;
+            width: 2px;
+            height: 100%;
+            background-color: red;
+            z-index: 1;
+        }
+        .reminder-due {
+            background-color: #ffeb3b;
+            color: #212529;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+        .maintenance-time {
+            background-color: #e91e63;
+            color: white;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+        .alert-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .alert {
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.3s forwards;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+        .alert-success {
+            background-color: #28a745;
+        }
+        .alert-warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        .alert-danger {
+            background-color: #dc3545;
+        }
+        .alert .close-btn {
+            background: none;
+            border: none;
+            color: inherit;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0;
+            margin-left: 15px;
+        }
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .dashboard-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        .dashboard-card h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #495057;
+            font-size: 16px;
+        }
+        .dashboard-card .value {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .dashboard-card .subtext {
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .user-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        .user-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .check-mark {
+            color: green;
+            font-weight: bold;
+        }
+        .x-mark {
+            color: red;
+            font-weight: bold;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .toggle-slider {
+            background-color: #4c6ca0;
+        }
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+    </style>
+</head>
+<body>
+    <!-- ログイン画面 -->
+    <div id="loginContainer" class="login-container">
+        <div class="login-form">
+            <div class="login-logo">
+                <h2>代車管理システム</h2>
+            </div>
+            <div class="form-group">
+                <label for="username">ユーザー名:</label>
+                <input type="text" id="username" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="password">パスワード:</label>
+                <input type="password" id="password" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <button id="loginBtn" type="button" style="width: 100%;">ログイン</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- メインコンテンツ -->
+    <div id="mainContainer" class="main-container">
+        <div class="header">
+            <h1>代車管理システム</h1>
+            <div class="user-info">
+                <span id="currentUser">管理者</span>
+                <button id="logoutBtn" class="secondary">ログアウト</button>
+            </div>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" data-tab="dashboardTab">ダッシュボード</button>
+            <button class="nav-tab" data-tab="vehiclesTab">代車一覧</button>
+            <button class="nav-tab" data-tab="calendarTab">予約カレンダー</button>
+            <button class="nav-tab" data-tab="vehicleMasterTab">車両マスタ</button>
+            <button class="nav-tab" data-tab="remindersTab">リマインダー</button>
+            <button class="nav-tab" data-tab="usersTab">ユーザー管理</button>
+        </div>
+
+        <div class="tab-content">
+            <!-- ダッシュボードタブ -->
+            <div id="dashboardTab" class="tab-pane active">
+                <h2>ダッシュボード</h2>
+                <div class="dashboard-cards">
+                    <div class="dashboard-card">
+                        <h3>代車総数</h3>
+                        <div class="value">12</div>
+                        <div class="subtext">車両登録数</div>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3>現在貸出中</h3>
+                        <div class="value">5</div>
+                        <div class="subtext">全体の 41.7%</div>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3>利用可能</h3>
+                        <div class="value">4</div>
+                        <div class="subtext">全体の 33.3%</div>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3>今日の返却予定</h3>
+                        <div class="value">2</div>
+                        <div class="subtext">要確認</div>
+                    </div>
+                </div>
+                
+                <h3>本日の返却予定</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>車両番号</th>
+                            <th>車種</th>
+                            <th>顧客名</th>
+                            <th>連絡先</th>
+                            <th>入庫日</th>
+                            <th>返却予定</th>
+                            <th>利用区分</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>RA-1234</td>
+                            <td>トヨタ カローラ</td>
+                            <td>山田太郎</td>
+                            <td>090-1234-5678</td>
+                            <td>2025-03-28</td>
+                            <td>2025-04-01</td>
+                            <td><span class="badge badge-repair">修理</span></td>
+                            <td>
+                                <button onclick="showReturnConfirmation(this)" class="success">返却確認</button>
+                                <button onclick="sendReminder(this)">リマインド送信</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>RB-5678</td>
+                            <td>ホンダ フィット</td>
+                            <td>佐藤花子</td>
+                            <td>090-8765-4321</td>
+                            <td>2025-03-25</td>
+                            <td>2025-04-01</td>
+                            <td><span class="badge badge-insurance">保険</span></td>
+                            <td>
+                                <button onclick="showReturnConfirmation(this)" class="success">返却確認</button>
+                                <button onclick="sendReminder(this)">リマインド送信</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>明日の返却予定</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>車両番号</th>
+                            <th>車種</th>
+                            <th>顧客名</th>
+                            <th>連絡先</th>
+                            <th>入庫日</th>
+                            <th>返却予定</th>
+                            <th>利用区分</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>RC-9012</td>
+                            <td>日産 ノート</td>
+                            <td>田中一郎</td>
+                            <td>090-5555-7777</td>
+                            <td>2025-03-26</td>
+                            <td>2025-04-02</td>
+                            <td><span class="badge badge-purchase">新車</span></td>
+                            <td>
+                                <button onclick="sendReminder(this)">事前リマインド</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 代車一覧タブ -->
+            <div id="vehiclesTab" class="tab-pane">
+                <div class="control-panel">
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="車両番号・顧客名で検索">
+                        <div class="filter-group">
+                            <select id="statusFilter">
+                                <option value="all">全てのステータス</option>
+                                <option value="available">利用可能</option>
+                                <option value="loaned">貸出中</option>
+                                <option value="maintenance">メンテナンス中</option>
+                                <option value="reserved">予約済み</option>
+                            </select>
+                            <select id="departmentFilter">
+                                <option value="all">全ての利用区分</option>
+                                <option value="repair">修理</option>
+                                <option value="purchase">新車</option>
+                                <option value="insurance">保険</option>
+                            </select>
+                        </div>
+                        <button id="searchBtn">検索</button>
+                        <button id="resetSearchBtn" class="secondary">リセット</button>
+                    </div>
+                    <div>
+                        <button id="checkAvailabilityBtn" class="warning">空き状況確認</button>
+                        <button id="addVehicleBtn">新規貸出登録</button>
+                    </div>
+                </div>
+                
+                <table id="vehicleTable">
+                    <thead>
+                        <tr>
+                            <th>車両番号</th>
+                            <th>車種</th>
+                            <th>顧客名</th>
+                            <th>入庫日</th>
+                            <th>返却予定日</th>
+                            <th>連絡先</th>
+                            <th>利用区分</th>
+                            <th>ステータス</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>RA-1234</td>
+                            <td>トヨタ カローラ</td>
+                            <td>山田太郎</td>
+                            <td>2025-03-28</td>
+                            <td>2025-04-01</td>
+                            <td>090-1234-5678</td>
+                            <td><span class="badge badge-repair">修理</span></td>
+                            <td class="status-loaned">貸出中</td>
+                            <td>
+                                <button onclick="editRecord(this)">編集</button>
+                                <button onclick="showReturnConfirmation(this)" class="success">返却</button>
+                                <button onclick="sendReminder(this)">リマインド</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>RB-5678</td>
+                            <td>ホンダ フィット</td>
+                            <td>佐藤花子</td>
+                            <td>2025-03-25</td>
+                            <td>2025-04-01</td>
+                            <td>090-8765-4321</td>
+                            <td><span class="badge badge-insurance">保険</span></td>
+                            <td class="status-loaned">貸出中</td>
+                            <td>
+                                <button onclick="editRecord(this)">編集</button>
+                                <button onclick="showReturnConfirmation(this)" class="success">返却</button>
+                                <button onclick="sendReminder(this)">リマインド</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>RC-9012</td>
+                            <td>日産 ノート</td>
+                            <td>田中一郎</td>
+                            <td>2025-03-26</td>
+                            <td>2025-04-02</td>
+                            <td>090-5555-7777</td>
+                            <td><span class="badge badge-purchase">新車</span></td>
+                            <td class="status-loaned">貸出中</td>
+                            <td>
+                                <button onclick="editRecord(this)">編集</button>
+                                <button onclick="showReturnConfirmation(this)" class="success">返却</button>
+                                <button onclick="sendReminder(this)">リマインド</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>RD-3456</td>
+                            <td>スズキ スイフト</td>
+                            <td>--</td>
+                            <td>--</td>
+                            <td>--</td>
+                            <td>--</td>
+                            <td>--</td>
+                            <td class="status-maintenance">メンテナンス中 <span class="maintenance-time">+2日</span></td>
+                            <td>
+                                <button onclick="editRecord(this)">編集</button>
+                                <button onclick="endMaintenance(this)" class="success">整備完了</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>RE-7890</td>
+                            <td>三菱 エクリプスクロス</td>
+                            <td>--</td>
+                            <td>--</td>
+                            <td>--</td>
+                            <td>--</td>
+                            <td>--</td>
+                            <td class="status-available">利用可能</td>
+                            <td>
+                                <button onclick="loanVehicle(this)">貸出</button>
+                                <button onclick="reserveVehicle(this)" class="warning">予約</button>
+                                <button onclick="startMaintenance(this)" class="secondary">整備</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>RF-1357</td>
+                            <td>ダイハツ タント</td>
+                            <td>高橋次郎 (予約)</td>
+                            <td>2025-04-05</td>
+                            <td>2025-04-10</td>
+                            <td>080-1122-3344</td>
+                            <td><span class="badge badge-repair">修理</span></td>
+                            <td class="status-reserved">予約済み</td>
+                            <td>
+                                <button onclick="editRecord(this)">編集</button>
+                                <button onclick="cancelReservation(this)" class="danger">予約キャンセル</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 予約カレンダータブ -->
+            <div id="calendarTab" class="tab-pane">
+                <div class="calendar-header">
+                    <h2>代車予約カレンダー</h2>
+                    <div class="calendar-nav">
+                        <button id="prevWeek" class="secondary">&lt; 前週</button>
+                        <button id="today" class="secondary">今日</button>
+                        <button id="nextWeek" class="secondary">次週 &gt;</button>
+                    </div>
+                </div>
+                
+                <div class="timeline">
+                    <div class="timeline-header">
+                        <div class="timeline-label">車両</div>
+                        <div class="timeline-header-cell">3/31(月)</div>
+                        <div class="timeline-header-cell">4/1(火)</div>
+                        <div class="timeline-header-cell">4/2(水)</div>
+                        <div class="timeline-header-cell">4/3(木)</div>
+                        <div class="timeline-header-cell">4/4(金)</div>
+                        <div class="timeline-header-cell">4/5(土)</div>
+                        <div class="timeline-header-cell">4/6(日)</div>
+                    </div>
+                    
+                    <div class="timeline-row">
+                        <div class="timeline-label">RA-1234<br>トヨタ カローラ</div>
+                        <div class="timeline-cells">
+                            <div class="timeline-event loaned" style="left: 0%; width: 28.5%;">
+                                山田太郎 (修理) 〜4/1
+                            </div>
+                            <div class="timeline-event maintenance" style="left: 28.5%; width: 14.5%;">
+                                整備 +1日
+                            </div>
+                            <div class="today-marker" style="left: 14.3%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-row">
+                        <div class="timeline-label">RB-5678<br>ホンダ フィット</div>
+                        <div class="timeline-cells">
+                            <div class="timeline-event loaned" style="left: 0%; width: 28.5%;">
+                                佐藤花子 (保険) 〜4/1
+                            </div>
+                            <div class="timeline-event reserved" style="left: 42.8%; width: 42.8%;">
+                                鈴木健太 (新車) 4/3〜4/6
+                            </div>
+                            <div class="today-marker" style="left: 14.3%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-row">
+                        <div class="timeline-label">RC-9012<br>日産 ノート</div>
+                        <div class="timeline-cells">
+                            <div class="timeline-event loaned" style="left: 0%; width: 42.8%;">
+                                田中一郎 (新車) 〜4/2
+                            </div>
+                            <div class="today-marker" style="left: 14.3%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-row">
+                        <div class="timeline-label">RD-3456<br>スズキ スイフト</div>
+                        <div class="timeline-cells">
+                            <div class="timeline-event maintenance" style="left: 0%; width: 42.8%;">
+                                整備中 +2日 (〜4/2)
+                            </div>
+                            <div class="today-marker" style="left: 14.3%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-row">
+                        <div class="timeline-label">RE-7890<br>三菱 エクリプスクロス</div>
+                        <div class="timeline-cells">
+                            <div class="today-marker" style="left: 14.3%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-row">
+                        <div class="timeline-label">RF-1357<br>ダイハツ タント</div>
+                        <div class="timeline-cells">
+                            <div class="timeline-event reserved" style="left: 71.4%; width: 71.4%;">
+                                高橋次郎 (修理) 4/5〜4/10
+                            </div>
+                            <div class="today-marker" style="left: 14.3%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 車両マスタタブ -->
+            <div id="vehicleMasterTab" class="tab-pane">
+                <div class="control-panel">
+                    <div class="search-box">
+                        <input type="text" id="masterSearchInput" placeholder="車両番号・車種で検索">
+                        <button id="masterSearchBtn">検索</button>
+                        <button id="resetMasterSearchBtn" class="secondary">リセット</button>
+                    </div>
+                    <button id="addMasterVehicleBtn">車両マスタ登録</button>
+                </div>
+                
+                <table id="vehicleMasterTable">
+                    <thead>
+                        <tr>
+                            <th>車両番号</th>
+                            <th>車種</th>
+                            <th>メーカー</th>
+                            <th>年式</th>
+                            <th>カラー</th>
+                            <th>整備時間設定</th>
+                            <th>使用可能区分</th>
+                            <th>ステータス</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>RA-1234</td>
+                            <td>カローラ</td>
+                            <td>トヨタ</td>
+                            <td>2023年</td>
+                            <td>ホワイト</td>
+                            <td>1日</td>
+                            <td>
+                                <span class="check-mark">修理</span>
+                                <span class="check-mark">新車</span>
+                                <span class="check-mark">保険</span>
+                            </td>
+                            <td class="status-loaned">貸出中</td>
+                            <td>
+                                <button onclick="editMasterVehicle(this)">編集</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>RB-5678</td>
+                            <td>フィット</td>
+                            <td>ホンダ</td>
+                            <td>2022年</td>
+                            <td>シルバー</td>
+                            <td>1日</td>
+                            <td>
+                                <span class="check-mark">修理</span>
+                                <span class="x-mark">新車</span>
+                                <span class="check-mark">保険</span>
+                            </td>
+                            <td class="status-loaned">貸出中</td>
+                            <td>
+                                <button onclick="editMasterVehicle(this)">編集</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>RC-9012</td>
+                            <td>ノート</td>
+                            <td>日産</td>
+                            <td>2023年</td>
+                            <td>ブルー</td>
+                            <td>1日</td>
+                            <td>
+                                <span class="x-mark">修理</span>
+                                <span class="check-mark">新車</span>
+                                <span class="check-mark">保険</span>
+                            </td>
+                            <td class="status-loaned">貸出中</td>
+                            <td>
+                                <button onclick="editMasterVehicle(this)">編集</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>RD-3456</td>
+                            <td>スイフト</td>
+                            <td>スズキ</td>
+                            <td>2022年</td>
+                            <td>レッド</td>
+                            <td>2日</td>
+                            <td>
+                                <span class="check-mark">修理</span>
+                                <span class="check-mark">新車</span>
+                                <span class="check-mark">保険</span>
+                            </td>
+                            <td class="status-maintenance">メンテナンス中</td>
+                            <td>
+                                <button onclick="editMasterVehicle(this)">編集</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>RE-7890</td>
+                            <td>エクリプスクロス</td>
+                            <td>三菱</td>
+                            <td>2023年</td>
+                            <td>ブラック</td>
+                            <td>2日</td>
+                            <td>
+                                <span class="check-mark">修理</span>
+                                <span class="check-mark">新車</span>
+                                <span class="x-mark">保険</span>
+                            </td>
+                            <td class="status-available">利用可能</td>
+                            <td>
+                                <button onclick="editMasterVehicle(this)">編集</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>RF-1357</td>
+                            <td>タント</td>
+                            <td>ダイハツ</td>
+                            <td>2021年</td>
+                            <td>パール</td>
+                            <td>1日</td>
+                            <td>
+                                <span class="check-mark">修理</span>
+                                <span class="x-mark">新車</span>
+                                <span class="x-mark">保険</span>
+                            </td>
+                            <td class="status-reserved">予約済み</td>
+                            <td>
+                                <button onclick="editMasterVehicle(this)">編集</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- リマインダータブ -->
+            <div id="remindersTab" class="tab-pane">
+                <div class="control-panel">
+                    <div class="search-box">
+                        <div class="filter-group">
+                            <label for="reminderStatusFilter">ステータス:</label>
+                            <select id="reminderStatusFilter">
+                                <option value="all">全て</option>
+                                <option value="pending">未送信</option>
+                                <option value="sent">送信済み</option>
+                                <option value="confirmed">確認済み</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="dateRange">期間:</label>
+                            <input type="date" id="startDate">
+                            <span>〜</span>
+                            <input type="date" id="endDate">
+                        </div>
+                        <button id="filterRemindersBtn">検索</button>
+                    </div>
+                    <button id="createReminderBtn">新規リマインダー</button>
+                </div>
+                
+                <table id="remindersTable">
+                    <thead>
+                        <tr>
+                            <th>車両番号</th>
+                            <th>車種</th>
+                            <th>顧客名</th>
+                            <th>連絡先</th>
+                            <th>返却予定日</th>
+                            <th>リマインド送信日</th>
+                            <th>ステータス</th>
+                            <th>返却確認</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>RA-1234</td>
+                            <td>トヨタ カローラ</td>
+                            <td>山田太郎</td>
+                            <td>090-1234-5678</td>
+                            <td>2025-04-01</td>
+                            <td>2025-03-31</td>
+                            <td>送信済み</td>
+                            <td>未確認</td>
+                            <td>
+                                <button onclick="showReturnConfirmation(this)" class="success">返却確認</button>
+                                <button onclick="resendReminder(this)">再送信</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>RB-5678</td>
+                            <td>ホンダ フィット</td>
+                            <td>佐藤花子</td>
+                            <td>090-8765-4321</td>
+                            <td>2025-04-01</td>
+                            <td>2025-03-30</td>
+                            <td>送信済み</td>
+                            <td>確認済み</td>
+                            <td>
+                                <button onclick="showReturnConfirmation(this)" class="success">返却確認</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>RC-9012</td>
+                            <td>日産 ノート</td>
+                            <td>田中一郎</td>
+                            <td>090-5555-7777</td>
+                            <td>2025-04-02</td>
+                            <td>--</td>
+                            <td>未送信</td>
+                            <td>--</td>
+                            <td>
+                                <button onclick="sendReminder(this)">リマインド送信</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>リマインダーテンプレート</h3>
+                <div class="form-section">
+                    <div class="form-group">
+                        <label for="reminderTemplate">デフォルトのリマインダーメッセージ:</label>
+                        <textarea id="reminderTemplate" rows="4" style="width: 100%">【自動送信】{顧客名}様、{会社名}です。
+貸出中の代車（{車種}）の返却予定日が{返却日}となっております。
+ご来店の日時をご連絡いただけますと幸いです。
+何かご質問があればお知らせください。</textarea>
+                    </div>
+                    <div style="text-align: right; margin-top: 10px;">
+                        <button id="saveTemplateBtn">テンプレート保存</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ユーザー管理タブ -->
+            <div id="usersTab" class="tab-pane">
+                <div class="control-panel">
+                    <div class="search-box">
+                        <input type="text" id="userSearchInput" placeholder="ユーザー名で検索">
+                        <button id="userSearchBtn">検索</button>
+                    </div>
+                    <button id="addUserBtn">ユーザー追加</button>
+                </div>
+                
+                <div class="user-list">
+                    <div class="user-card">
+                        <h3>管理者</h3>
+                        <p><strong>ユーザー名:</strong> admin</p>
+                        <p><strong>役割:</strong> システム管理者</p>
+                        <p><strong>作成日:</strong> 2025-01-01</p>
+                        <p><strong>最終ログイン:</strong> 2025-04-01 09:15</p>
+                        <div style="margin-top: 10px;">
+                            <button onclick="editUser(this)">編集</button>
+                            <button onclick="resetPassword(this)" class="warning">パスワードリセット</button>
+                        </div>
+                    </div>
+                    <div class="user-card">
+                        <h3>山本 修</h3>
+                        <p><strong>ユーザー名:</strong> yamamoto</p>
+                        <p><strong>役割:</strong> 営業担当</p>
+                        <p><strong>作成日:</strong> 2025-02-15</p>
+                        <p><strong>最終ログイン:</strong> 2025-03-31 17:42</p>
+                        <div style="margin-top: 10px;">
+                            <button onclick="editUser(this)">編集</button>
+                            <button onclick="resetPassword(this)" class="warning">パスワードリセット</button>
+                        </div>
+                    </div>
+                    <div class="user-card">
+                        <h3>鈴木 健</h3>
+                        <p><strong>ユーザー名:</strong> suzuki</p>
+                        <p><strong>役割:</strong> フロント担当</p>
+                        <p><strong>作成日:</strong> 2025-02-20</p>
+                        <p><strong>最終ログイン:</strong> 2025-04-01 08:30</p>
+                        <div style="margin-top: 10px;">
+                            <button onclick="editUser(this)">編集</button>
+                            <button onclick="resetPassword(this)" class="warning">パスワードリセット</button>
+                        </div>
+                    </div>
+                    <div class="user-card">
+                        <h3>佐々木 美咲</h3>
+                        <p><strong>ユーザー名:</strong> sasaki</p>
+                        <p><strong>役割:</strong> 事務担当</p>
+                        <p><strong>作成日:</strong> 2025-03-01</p>
+                        <p><strong>最終ログイン:</strong> 2025-03-31 15:10</p>
+                        <div style="margin-top: 10px;">
+                            <button onclick="editUser(this)">編集</button>
+                            <button onclick="resetPassword(this)" class="warning">パスワードリセット</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- モーダルウィンドウ -->
+    <!-- 代車登録・編集モーダル -->
+    <div id="vehicleModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="vehicleModalTitle">代車登録</h2>
+            <form id="vehicleForm">
+                <div class="form-section">
+                    <h3>車両情報</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="vehicleNumber">車両番号:</label>
+                            <select id="vehicleNumber" required>
+                                <option value="">選択してください</option>
+                                <option value="RA-1234">RA-1234 (トヨタ カローラ)</option>
+                                <option value="RB-5678">RB-5678 (ホンダ フィット)</option>
+                                <option value="RC-9012">RC-9012 (日産 ノート)</option>
+                                <option value="RD-3456">RD-3456 (スズキ スイフト)</option>
+                                <option value="RE-7890">RE-7890 (三菱 エクリプスクロス)</option>
+                                <option value="RF-1357">RF-1357 (ダイハツ タント)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="vehicleStatus">ステータス:</label>
+                            <select id="vehicleStatus">
+                                <option value="available">利用可能</option>
+                                <option value="loaned">貸出中</option>
+                                <option value="maintenance">メンテナンス中</option>
+                                <option value="reserved">予約済み</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="maintenanceSection" class="form-section" style="display: none;">
+                    <h3>整備情報</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="maintenanceStart">整備開始日:</label>
+                            <input type="date" id="maintenanceStart">
+                        </div>
+                        <div class="form-group">
+                            <label for="additionalTime">アディショナルタイム:</label>
+                            <select id="additionalTime">
+                                <option value="0">なし</option>
+                                <option value="1">1日</option>
+                                <option value="2">2日</option>
+                                <option value="3">3日</option>
+                                <option value="4">4日</option>
+                                <option value="5">5日</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="maintenanceNotes">整備メモ:</label>
+                        <textarea id="maintenanceNotes" rows="3" style="width: 100%;"></textarea>
+                    </div>
+                </div>
+                
+                <div id="customerInfoSection" class="form-section">
+                    <h3>顧客情報</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="customerName">顧客名:</label>
+                            <input type="text" id="customerName">
+                        </div>
+                        <div class="form-group">
+                            <label for="customerContact">連絡先:</label>
+                            <input type="tel" id="customerContact">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="customerEmail">メールアドレス:</label>
+                            <input type="email" id="customerEmail">
+                        </div>
+                        <div class="form-group">
+                            <label for="usageType">利用区分:</label>
+                            <select id="usageType">
+                                <option value="repair">修理</option>
+                                <option value="purchase">新車</option>
+                                <option value="insurance">保険</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="checkInDate">入庫日:</label>
+                            <input type="date" id="checkInDate">
+                        </div>
+                        <div class="form-group">
+                            <label for="returnDate">返却予定日:</label>
+                            <input type="date" id="returnDate">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="notes">備考:</label>
+                        <textarea id="notes" rows="3" style="width: 100%;"></textarea>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                <button id="confirmReturnBtn" class="success" style="padding: 10px 20px;">返却を確定</button>
+                <button style="padding: 10px 20px; background-color: #f44336; margin-left: 10px;" onclick="closeModal('returnConfirmModal')">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 車両マスタ登録・編集モーダル -->
+    <div id="vehicleMasterModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="masterModalTitle">車両マスタ登録</h2>
+            <form id="vehicleMasterForm">
+                <div class="form-section">
+                    <h3>基本情報</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="masterVehicleNumber">車両番号:</label>
+                            <input type="text" id="masterVehicleNumber" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="masterVehicleMaker">メーカー:</label>
+                            <select id="masterVehicleMaker">
+                                <option value="トヨタ">トヨタ</option>
+                                <option value="ホンダ">ホンダ</option>
+                                <option value="日産">日産</option>
+                                <option value="スズキ">スズキ</option>
+                                <option value="マツダ">マツダ</option>
+                                <option value="三菱">三菱</option>
+                                <option value="ダイハツ">ダイハツ</option>
+                                <option value="スバル">スバル</option>
+                                <option value="レクサス">レクサス</option>
+                                <option value="その他">その他</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="masterVehicleModel">車種:</label>
+                            <input type="text" id="masterVehicleModel" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="masterVehicleYear">年式:</label>
+                            <select id="masterVehicleYear">
+                                <option value="2025年">2025年</option>
+                                <option value="2024年">2024年</option>
+                                <option value="2023年">2023年</option>
+                                <option value="2022年">2022年</option>
+                                <option value="2021年">2021年</option>
+                                <option value="2020年">2020年</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="masterVehicleColor">カラー:</label>
+                            <input type="text" id="masterVehicleColor">
+                        </div>
+                        <div class="form-group">
+                            <label for="masterMaintenanceTime">標準整備時間:</label>
+                            <select id="masterMaintenanceTime">
+                                <option value="1">1日</option>
+                                <option value="2">2日</option>
+                                <option value="3">3日</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>利用区分設定</h3>
+                    <div style="display: flex; gap: 20px; margin-top: 10px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="useForRepair" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span>修理</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="useForPurchase" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span>新車</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="useForInsurance" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span>保険</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>車両詳細</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="masterVehicleGrade">グレード:</label>
+                            <input type="text" id="masterVehicleGrade">
+                        </div>
+                        <div class="form-group">
+                            <label for="masterVehicleTransmission">トランスミッション:</label>
+                            <select id="masterVehicleTransmission">
+                                <option value="AT">AT</option>
+                                <option value="CVT">CVT</option>
+                                <option value="MT">MT</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="masterVehicleNotes">備考:</label>
+                        <textarea id="masterVehicleNotes" rows="3" style="width: 100%;"></textarea>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <button type="submit" style="padding: 10px 20px;">保存</button>
+                    <button type="button" style="padding: 10px 20px; background-color: #f44336; margin-left: 10px;" onclick="closeModal('vehicleMasterModal')">キャンセル</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ユーザー管理モーダル -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="userModalTitle">ユーザー追加</h2>
+            <form id="userForm">
+                <div class="form-section">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="userName">氏名:</label>
+                            <input type="text" id="userName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="userLoginId">ログインID:</label>
+                            <input type="text" id="userLoginId" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="userPassword">パスワード:</label>
+                            <input type="password" id="userPassword">
+                        </div>
+                        <div class="form-group">
+                            <label for="userPasswordConfirm">パスワード (確認):</label>
+                            <input type="password" id="userPasswordConfirm">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="userRole">役割:</label>
+                            <select id="userRole">
+                                <option value="admin">システム管理者</option>
+                                <option value="manager">マネージャー</option>
+                                <option value="sales">営業担当</option>
+                                <option value="front">フロント担当</option>
+                                <option value="clerk">事務担当</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="userEmail">メールアドレス:</label>
+                            <input type="email" id="userEmail">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>アクセス権限</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 10px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="accessDashboard" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span>ダッシュボード</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="accessVehicles" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span>代車一覧</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="accessCalendar" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span>予約カレンダー</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="accessMaster" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span>車両マスタ</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="accessReminders" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span>リマインダー</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="accessUsers">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span>ユーザー管理</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <button type="submit" style="padding: 10px 20px;">保存</button>
+                    <button type="button" style="padding: 10px 20px; background-color: #f44336; margin-left: 10px;" onclick="closeModal('userModal')">キャンセル</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- アラート表示用コンテナ -->
+    <div id="alertContainer" class="alert-container"></div>
+
+    <script>
+        // ログイン処理
+        document.getElementById('loginBtn').addEventListener('click', function() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (username && password) {
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('mainContainer').style.display = 'block';
+                document.getElementById('currentUser').textContent = username === 'admin' ? '管理者' : username;
+                showAlert('ログインしました。', 'success');
+            } else {
+                showAlert('ユーザー名とパスワードを入力してください。', 'danger');
+            }
+        });
+        
+        // ログアウト処理
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            document.getElementById('loginContainer').style.display = 'flex';
+            document.getElementById('mainContainer').style.display = 'none';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        });
+        
+        // タブ切り替え
+        const tabs = document.querySelectorAll('.nav-tab');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                // すべてのタブから active クラスを削除
+                tabs.forEach(t => t.classList.remove('active'));
+                // クリックされたタブに active クラスを追加
+                this.classList.add('active');
+                
+                // すべてのタブペインを非表示にする
+                const tabPanes = document.querySelectorAll('.tab-pane');
+                tabPanes.forEach(pane => pane.classList.remove('active'));
+                
+                // クリックされたタブに対応するタブペインを表示
+                const tabId = this.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+        
+        // モーダル操作
+        const vehicleModal = document.getElementById("vehicleModal");
+        const availabilityModal = document.getElementById("availabilityModal");
+        const returnConfirmModal = document.getElementById("returnConfirmModal");
+        const vehicleMasterModal = document.getElementById("vehicleMasterModal");
+        const userModal = document.getElementById("userModal");
+        
+        const addBtn = document.getElementById("addVehicleBtn");
+        const checkAvailabilityBtn = document.getElementById("checkAvailabilityBtn");
+        const addMasterVehicleBtn = document.getElementById("addMasterVehicleBtn");
+        const addUserBtn = document.getElementById("addUserBtn");
+        
+        const closeBtns = document.querySelectorAll(".close");
+        
+        // モーダルを開く
+        addBtn.onclick = function() {
+            document.getElementById("vehicleModalTitle").textContent = "新規貸出登録";
+            document.getElementById("vehicleForm").reset();
+            openModal('vehicleModal');
+            updateFormSections();
+        }
+        
+        checkAvailabilityBtn.onclick = function() {
+            openModal('availabilityModal');
+        }
+        
+        addMasterVehicleBtn.onclick = function() {
+            document.getElementById("masterModalTitle").textContent = "車両マスタ登録";
+            document.getElementById("vehicleMasterForm").reset();
+            openModal('vehicleMasterModal');
+        }
+        
+        addUserBtn.onclick = function() {
+            document.getElementById("userModalTitle").textContent = "ユーザー追加";
+            document.getElementById("userForm").reset();
+            openModal('userModal');
+        }
+        
+        // 閉じるボタン
+        closeBtns.forEach(btn => {
+            btn.onclick = function() {
+                closeModal(this.closest('.modal').id);
+            }
+        });
+        
+        // モーダル外クリックで閉じる
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                closeModal(event.target.id);
+            }
+        }
+        
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = "block";
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = "none";
+        }
+        
+        // ステータスに応じてフォームセクションの表示制御
+        const vehicleStatus = document.getElementById("vehicleStatus");
+        vehicleStatus.onchange = updateFormSections;
+        
+        function updateFormSections() {
+            const status = vehicleStatus.value;
+            const customerSection = document.getElementById("customerInfoSection");
+            const maintenanceSection = document.getElementById("maintenanceSection");
+            
+            if (status === "loaned" || status === "reserved") {
+                customerSection.style.display = "block";
+            } else {
+                customerSection.style.display = "none";
+            }
+            
+            if (status === "maintenance") {
+                maintenanceSection.style.display = "block";
+            } else {
+                maintenanceSection.style.display = "none";
+            }
+        }
+        
+        // 整備が必要かどうかのチェックボックスの切り替え
+        document.getElementById("needsMaintenance").onchange = function() {
+            if (this.checked) {
+                document.getElementById("returnMaintenanceSection").style.display = "block";
+            } else {
+                document.getElementById("returnMaintenanceSection").style.display = "none";
+            }
+        };
+        
+        // テーブル操作関数
+        function editRecord(btn) {
+            const row = btn.closest("tr");
+            document.getElementById("vehicleModalTitle").textContent = "代車情報編集";
+            
+            // フォームに現在の値をセット
+            document.getElementById("vehicleNumber").value = row.cells[0].textContent;
+            
+            const status = row.cells[7].textContent.split(' ')[0]; // "メンテナンス中 +2日" から "メンテナンス中" を取得
+            if (status === "貸出中") {
+                document.getElementById("vehicleStatus").value = "loaned";
+                document.getElementById("customerName").value = row.cells[2].textContent;
+                document.getElementById("checkInDate").value = row.cells[3].textContent;
+                document.getElementById("returnDate").value = row.cells[4].textContent;
+                document.getElementById("customerContact").value = row.cells[5].textContent;
+                
+                // 利用区分の設定
+                const usageType = row.cells[6].querySelector('.badge').textContent;
+                if (usageType === "修理") {
+                    document.getElementById("usageType").value = "repair";
+                } else if (usageType === "新車") {
+                    document.getElementById("usageType").value = "purchase";
+                } else if (usageType === "保険") {
+                    document.getElementById("usageType").value = "insurance";
+                }
+            } else if (status === "メンテナンス中") {
+                document.getElementById("vehicleStatus").value = "maintenance";
+                
+                // 追加日数を取得（例："+2日"）
+                const additionalTimeText = row.cells[7].querySelector('.maintenance-time')?.textContent || "+0日";
+                const additionalTime = additionalTimeText.match(/\+(\d+)日/)[1];
+                document.getElementById("additionalTime").value = additionalTime;
+            } else if (status === "予約済み") {
+                document.getElementById("vehicleStatus").value = "reserved";
+                document.getElementById("customerName").value = row.cells[2].textContent.replace(" (予約)", "");
+                document.getElementById("checkInDate").value = row.cells[3].textContent;
+                document.getElementById("returnDate").value = row.cells[4].textContent;
+                document.getElementById("customerContact").value = row.cells[5].textContent;
+                
+                // 利用区分の設定
+                const usageType = row.cells[6].querySelector('.badge').textContent;
+                if (usageType === "修理") {
+                    document.getElementById("usageType").value = "repair";
+                } else if (usageType === "新車") {
+                    document.getElementById("usageType").value = "purchase";
+                } else if (usageType === "保険") {
+                    document.getElementById("usageType").value = "insurance";
+                }
+            } else {
+                document.getElementById("vehicleStatus").value = "available";
+            }
+            
+            updateFormSections();
+            openModal('vehicleModal');
+        }
+        
+        function loanVehicle(btn) {
+            const row = btn.closest("tr");
+            document.getElementById("vehicleModalTitle").textContent = "代車貸出登録";
+            
+            // フォームに現在の車両情報をセット
+            document.getElementById("vehicleNumber").value = row.cells[0].textContent;
+            document.getElementById("vehicleStatus").value = "loaned";
+            
+            // その他のフィールドをクリア
+            document.getElementById("customerName").value = "";
+            document.getElementById("customerContact").value = "";
+            document.getElementById("customerEmail").value = "";
+            document.getElementById("checkInDate").value = new Date().toISOString().split('T')[0]; // 今日の日付
+            document.getElementById("returnDate").value = "";
+            document.getElementById("notes").value = "";
+            
+            updateFormSections();
+            openModal('vehicleModal');
+        }
+        
+        function reserveVehicle(btn) {
+            const row = btn.closest("tr");
+            document.getElementById("vehicleModalTitle").textContent = "代車予約登録";
+            
+            // フォームに現在の車両情報をセット
+            document.getElementById("vehicleNumber").value = row.cells[0].textContent;
+            document.getElementById("vehicleStatus").value = "reserved";
+            
+            // その他のフィールドをクリア
+            document.getElementById("customerName").value = "";
+            document.getElementById("customerContact").value = "";
+            document.getElementById("customerEmail").value = "";
+            document.getElementById("checkInDate").value = ""; // 予約なので空欄
+            document.getElementById("returnDate").value = "";
+            document.getElementById("notes").value = "";
+            
+            updateFormSections();
+            openModal('vehicleModal');
+        }
+        
+        function startMaintenance(btn) {
+            const row = btn.closest("tr");
+            document.getElementById("vehicleModalTitle").textContent = "整備登録";
+            
+            // フォームに現在の車両情報をセット
+            document.getElementById("vehicleNumber").value = row.cells[0].textContent;
+            document.getElementById("vehicleStatus").value = "maintenance";
+            document.getElementById("maintenanceStart").value = new Date().toISOString().split('T')[0]; // 今日の日付
+            document.getElementById("additionalTime").value = "1"; // デフォルト1日
+            document.getElementById("maintenanceNotes").value = "";
+            
+            updateFormSections();
+            openModal('vehicleModal');
+        }
+        
+        function showReturnConfirmation(btn) {
+            const row = btn.closest("tr");
+            
+            // 返却確認モーダルに値をセット
+            document.getElementById("returnVehicleNumber").textContent = row.cells[0].textContent;
+            document.getElementById("returnVehicleModel").textContent = row.cells[1].textContent;
+            document.getElementById("returnCustomerName").textContent = row.cells[2].textContent;
+            document.getElementById("returnCustomerContact").textContent = row.cells[5].textContent;
+            document.getElementById("returnCheckInDate").textContent = row.cells[3].textContent;
+            document.getElementById("returnDueDate").textContent = row.cells[4].textContent;
+            
+            // 今日の日付をデフォルトでセット
+            document.getElementById("actualReturnDate").value = new Date().toISOString().split('T')[0];
+            
+            // 整備が必要かどうかのチェックをリセット
+            document.getElementById("needsMaintenance").checked = false;
+            document.getElementById("returnMaintenanceSection").style.display = "none";
+            
+            openModal('returnConfirmModal');
+        }
+        
+        function endMaintenance(btn) {
+            if (confirm("整備完了処理を行いますか？車両は「利用可能」ステータスになります。")) {
+                const row = btn.closest("tr");
+                row.cells[7].textContent = "利用可能";
+                row.cells[7].className = "status-available";
+                
+                // ボタンの更新
+                row.cells[8].innerHTML = '<button onclick="loanVehicle(this)">貸出</button> <button onclick="reserveVehicle(this)" class="warning">予約</button> <button onclick="startMaintenance(this)" class="secondary">整備</button>';
+                
+                showAlert("整備完了処理が完了しました。", "success");
+            }
+        }
+        
+        function cancelReservation(btn) {
+            if (confirm("この予約をキャンセルしますか？")) {
+                const row = btn.closest("tr");
+                row.cells[2].textContent = "--";
+                row.cells[3].textContent = "--";
+                row.cells[4].textContent = "--";
+                row.cells[5].textContent = "--";
+                row.cells[6].textContent = "--";
+                row.cells[7].textContent = "利用可能";
+                row.cells[7].className = "status-available";
+                
+                // ボタンの更新
+                row.cells[8].innerHTML = '<button onclick="loanVehicle(this)">貸出</button> <button onclick="reserveVehicle(this)" class="warning">予約</button> <button onclick="startMaintenance(this)" class="secondary">整備</button>';
+                
+                showAlert("予約がキャンセルされました。", "success");
+            }
+        }
+        
+        function editMasterVehicle(btn) {
+            const row = btn.closest("tr");
+            document.getElementById("masterModalTitle").textContent = "車両マスタ編集";
+            
+            // フォームに現在の値をセット
+            document.getElementById("masterVehicleNumber").value = row.cells[0].textContent;
+            document.getElementById("masterVehicleModel").value = row.cells[1].textContent;
+            document.getElementById("masterVehicleMaker").value = row.cells[2].textContent;
+            document.getElementById("masterVehicleYear").value = row.cells[3].textContent;
+            document.getElementById("masterVehicleColor").value = row.cells[4].textContent;
+            document.getElementById("masterMaintenanceTime").value = row.cells[5].textContent.replace("日", "");
+            
+            // 使用可能区分の設定
+            const usageCells = row.cells[6].querySelectorAll('span');
+            document.getElementById("useForRepair").checked = usageCells[0].className === "check-mark";
+            document.getElementById("useForPurchase").checked = usageCells[1].className === "check-mark";
+            document.getElementById("useForInsurance").checked = usageCells[2].className === "check-mark";
+            
+            openModal('vehicleMasterModal');
+        }
+        
+        function editUser(btn) {
+            const card = btn.closest(".user-card");
+            document.getElementById("userModalTitle").textContent = "ユーザー編集";
+            
+            // フォームに現在の値をセット
+            document.getElementById("userName").value = card.querySelector("h3").textContent;
+            document.getElementById("userLoginId").value = card.querySelector("p:nth-child(2)").textContent.split(": ")[1];
+            
+            // 役割の設定
+            const role = card.querySelector("p:nth-child(3)").textContent.split(": ")[1];
+            if (role === "システム管理者") {
+                document.getElementById("userRole").value = "admin";
+            } else if (role === "営業担当") {
+                document.getElementById("userRole").value = "sales";
+            } else if (role === "フロント担当") {
+                document.getElementById("userRole").value = "front";
+            } else if (role === "事務担当") {
+                document.getElementById("userRole").value = "clerk";
+            }
+            
+            // パスワードフィールドをクリア
+            document.getElementById("userPassword").value = "";
+            document.getElementById("userPasswordConfirm").value = "";
+            
+            openModal('userModal');
+        }
+        
+        function resetPassword(btn) {
+            const card = btn.closest(".user-card");
+            const userName = card.querySelector("h3").textContent;
+            
+            if (confirm(`${userName}のパスワードをリセットしますか？`)) {
+                showAlert(`${userName}のパスワードがリセットされました。`, "success");
+            }
+        }
+        
+        function sendReminder(btn) {
+            const row = btn.closest("tr");
+            const customerName = row.cells[2].textContent;
+            
+            if (confirm(`${customerName}様に返却リマインダーを送信しますか？`)) {
+                showAlert(`${customerName}様にリマインダーが送信されました。`, "success");
+            }
+        }
+        
+        function resendReminder(btn) {
+            const row = btn.closest("tr");
+            const customerName = row.cells[2].textContent;
+            
+            if (confirm(`${customerName}様にリマインダーを再送信しますか？`)) {
+                showAlert(`${customerName}様にリマインダーが再送信されました。`, "success");
+            }
+        }
+        
+        function reserveFromAvailability(btn) {
+            const row = btn.closest("tr");
+            document.getElementById("vehicleModalTitle").textContent = "代車予約登録";
+            
+            // フォームに現在の車両情報をセット
+            document.getElementById("vehicleNumber").value = row.cells[0].textContent;
+            document.getElementById("vehicleStatus").value = "reserved";
+            
+            // その他のフィールドをクリア
+            document.getElementById("customerName").value = "";
+            document.getElementById("customerContact").value = "";
+            document.getElementById("customerEmail").value = "";
+            
+            // 空き状況確認で設定した日付を予約日にセット
+            document.getElementById("checkInDate").value = document.getElementById("availabilityStartDate").value;
+            document.getElementById("returnDate").value = document.getElementById("availabilityEndDate").value;
+            document.getElementById("notes").value = "";
+            
+            closeModal('availabilityModal');
+            updateFormSections();
+            openModal('vehicleModal');
+        }
+        
+        // フォーム送信処理
+        const vehicleForm = document.getElementById("vehicleForm");
+        vehicleForm.onsubmit = function(e) {
+            e.preventDefault();
+            
+            // ここでデータを保存する処理を実装
+            // 実際のアプリケーションではサーバーに送信する
+            
+            showAlert("代車情報が保存されました。", "success");
+            closeModal('vehicleModal');
+            
+            // 実際のアプリケーションでは、テーブルを更新する処理が必要
+        }
+        
+        const vehicleMasterForm = document.getElementById("vehicleMasterForm");
+        vehicleMasterForm.onsubmit = function(e) {
+            e.preventDefault();
+            
+            showAlert("車両マスタ情報が保存されました。", "success");
+            closeModal('vehicleMasterModal');
+        }
+        
+        const userForm = document.getElementById("userForm");
+        userForm.onsubmit = function(e) {
+            e.preventDefault();
+            
+            showAlert("ユーザー情報が保存されました。", "success");
+            closeModal('userModal');
+        }
+        
+        // 返却確認ボタンのイベント
+        document.getElementById("confirmReturnBtn").addEventListener("click", function() {
+            const needsMaintenance = document.getElementById("needsMaintenance").checked;
+            showAlert("返却処理が完了しました。", "success");
+            
+            if (needsMaintenance) {
+                const duration = document.getElementById("maintenanceDuration").value;
+                showAlert(`整備モードに移行しました。整備期間: ${duration}日`, "warning");
+            }
+            
+            closeModal('returnConfirmModal');
+        });
+        
+        // 空き状況確認
+        document.getElementById("checkAvailabilityConfirmBtn").addEventListener("click", function() {
+            showAlert("空き状況が更新されました。", "success");
+        });
+        
+        // テンプレート保存
+        document.getElementById("saveTemplateBtn").addEventListener("click", function() {
+            showAlert("リマインダーテンプレートが保存されました。", "success");
+        });
+        
+        // 検索機能
+        document.getElementById("searchBtn").addEventListener("click", function() {
+            const searchText = document.getElementById("searchInput").value.toLowerCase();
+            const statusFilter = document.getElementById("statusFilter").value;
+            const departmentFilter = document.getElementById("departmentFilter").value;
+            const rows = document.getElementById("vehicleTable").getElementsByTagName("tbody")[0].rows;
+            
+            for (let i = 0; i < rows.length; i++) {
+                const vehicleNumber = rows[i].cells[0].textContent.toLowerCase();
+                const vehicleModel = rows[i].cells[1].textContent.toLowerCase();
+                const customerName = rows[i].cells[2].textContent.toLowerCase();
+                const status = rows[i].cells[7].textContent;
+                
+                // 利用区分の取得
+                let department = "";
+                const badge = rows[i].cells[6].querySelector('.badge');
+                if (badge) {
+                    department = badge.textContent.toLowerCase();
+                }
+                
+                // ステータスフィルタ
+                let statusMatch = true;
+                if (statusFilter !== "all") {
+                    if (statusFilter === "available" && !status.includes("利用可能")) statusMatch = false;
+                    if (statusFilter === "loaned" && !status.includes("貸出中")) statusMatch = false;
+                    if (statusFilter === "maintenance" && !status.includes("メンテナンス中")) statusMatch = false;
+                    if (statusFilter === "reserved" && !status.includes("予約済み")) statusMatch = false;
+                }
+                
+                // 利用区分フィルタ
+                let departmentMatch = true;
+                if (departmentFilter !== "all") {
+                    if (departmentFilter === "repair" && !department.includes("修理")) departmentMatch = false;
+                    if (departmentFilter === "purchase" && !department.includes("新車")) departmentMatch = false;
+                    if (departmentFilter === "insurance" && !department.includes("保険")) departmentMatch = false;
+                }
+                
+                // テキスト検索
+                const textMatch = vehicleNumber.includes(searchText) || 
+                                vehicleModel.includes(searchText) || 
+                                customerName.includes(searchText);
+                
+                // 全ての条件を満たす場合のみ表示
+                if (textMatch && statusMatch && departmentMatch) {
+                    rows[i].style.display = "";
+                } else {
+                    rows[i].style.display = "none";
+                }
+            }
+        });
+        
+        // 検索リセット
+        document.getElementById("resetSearchBtn").addEventListener("click", function() {
+            document.getElementById("searchInput").value = "";
+            document.getElementById("statusFilter").value = "all";
+            document.getElementById("departmentFilter").value = "all";
+            
+            // 全ての行を表示
+            const rows = document.getElementById("vehicleTable").getElementsByTagName("tbody")[0].rows;
+            for (let i = 0; i < rows.length; i++) {
+                rows[i].style.display = "";
+            }
+        });
+        
+        // ユーザー検索
+        document.getElementById("userSearchBtn").addEventListener("click", function() {
+            const searchText = document.getElementById("userSearchInput").value.toLowerCase();
+            const userCards = document.querySelectorAll(".user-card");
+            
+            userCards.forEach(card => {
+                const userName = card.querySelector("h3").textContent.toLowerCase();
+                const userId = card.querySelector("p:nth-child(2)").textContent.toLowerCase();
+                
+                if (userName.includes(searchText) || userId.includes(searchText)) {
+                    card.style.display = "";
+                } else {
+                    card.style.display = "none";
+                }
+            });
+        });
+        
+        // アラート表示関数
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById("alertContainer");
+            const alertDiv = document.createElement("div");
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button class="close-btn">&times;</button>
+            `;
+            
+            alertContainer.appendChild(alertDiv);
+            
+            // 閉じるボタンにイベントリスナーを追加
+            alertDiv.querySelector(".close-btn").addEventListener("click", function() {
+                alertDiv.remove();
+            });
+            
+            // 5秒後に自動的に消える
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+        
+        // カレンダーナビゲーション
+        document.getElementById("prevWeek").addEventListener("click", function() {
+            showAlert("前週のカレンダーを表示しています。", "success");
+        });
+        
+        document.getElementById("today").addEventListener("click", function() {
+            showAlert("今日の日付にカレンダーを更新しました。", "success");
+        });
+        
+        document.getElementById("nextWeek").addEventListener("click", function() {
+            showAlert("次週のカレンダーを表示しています。", "success");
+        });
+    </script>
+</body>
+</html>
+
+                    <button type="submit" style="padding: 10px 20px;">保存</button>
+                    <button type="button" style="padding: 10px 20px; background-color: #f44336; margin-left: 10px;" onclick="closeModal('vehicleModal')">キャンセル</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 空き状況確認モーダル -->
+    <div id="availabilityModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>代車空き状況確認</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="availabilityStartDate">利用開始日:</label>
+                    <input type="date" id="availabilityStartDate" value="2025-04-01">
+                </div>
+                <div class="form-group">
+                    <label for="availabilityEndDate">利用終了日:</label>
+                    <input type="date" id="availabilityEndDate" value="2025-04-10">
+                </div>
+                <div class="form-group">
+                    <label for="usageTypeFilter">利用区分:</label>
+                    <select id="usageTypeFilter">
+                        <option value="all">全て</option>
+                        <option value="repair">修理</option>
+                        <option value="purchase">新車</option>
+                        <option value="insurance">保険</option>
+                    </select>
+                </div>
+            </div>
+            <button id="checkAvailabilityConfirmBtn" style="margin-top: 10px;">検索</button>
+            
+            <div style="margin-top: 20px;">
+                <h3>利用可能な代車</h3>
+                <table id="availableVehiclesTable">
+                    <thead>
+                        <tr>
+                            <th>車両番号</th>
+                            <th>車種</th>
+                            <th>メーカー</th>
+                            <th>カラー</th>
+                            <th>利用区分</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>RE-7890</td>
+                            <td>三菱 エクリプスクロス</td>
+                            <td>三菱</td>
+                            <td>ブラック</td>
+                            <td>修理、新車</td>
+                            <td>
+                                <button onclick="reserveFromAvailability(this)" class="warning">予約</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>RG-2468</td>
+                            <td>マツダ デミオ</td>
+                            <td>マツダ</td>
+                            <td>レッド</td>
+                            <td>修理、新車、保険</td>
+                            <td>
+                                <button onclick="reserveFromAvailability(this)" class="warning">予約</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <button style="padding: 10px 20px; background-color: #f44336;" onclick="closeModal('availabilityModal')">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 返却確認モーダル -->
+    <div id="returnConfirmModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>代車返却確認</h2>
+            <div class="form-section">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>車両番号:</label>
+                        <div id="returnVehicleNumber" style="padding: 8px; background-color: #f8f9fa; border-radius: 4px;">RA-1234</div>
+                    </div>
+                    <div class="form-group">
+                        <label>車種:</label>
+                        <div id="returnVehicleModel" style="padding: 8px; background-color: #f8f9fa; border-radius: 4px;">トヨタ カローラ</div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>顧客名:</label>
+                        <div id="returnCustomerName" style="padding: 8px; background-color: #f8f9fa; border-radius: 4px;">山田太郎</div>
+                    </div>
+                    <div class="form-group">
+                        <label>連絡先:</label>
+                        <div id="returnCustomerContact" style="padding: 8px; background-color: #f8f9fa; border-radius: 4px;">090-1234-5678</div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>入庫日:</label>
+                        <div id="returnCheckInDate" style="padding: 8px; background-color: #f8f9fa; border-radius: 4px;">2025-03-28</div>
+                    </div>
+                    <div class="form-group">
+                        <label>返却予定日:</label>
+                        <div id="returnDueDate" style="padding: 8px; background-color: #f8f9fa; border-radius: 4px;">2025-04-01</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h3>返却処理</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="actualReturnDate">実際の返却日:</label>
+                        <input type="date" id="actualReturnDate" value="2025-04-01">
+                    </div>
+                    <div class="form-group">
+                        <label for="vehicleCondition">車両状態:</label>
+                        <select id="vehicleCondition">
+                            <option value="good">良好</option>
+                            <option value="minor">軽微な損傷あり</option>
+                            <option value="maintenance">整備必要</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="returnNotes">返却メモ:</label>
+                    <textarea id="returnNotes" rows="3" style="width: 100%;"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>整備が必要ですか？</label>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="needsMaintenance">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span>はい</span>
+                    </div>
+                </div>
+                
+                <div id="returnMaintenanceSection" style="display: none; margin-top: 15px;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="maintenanceDuration">整備期間 (アディショナルタイム):</label>
+                            <select id="maintenanceDuration">
+                                <option value="1">1日</option>
+                                <option value="2">2日</option>
+                                <option value="3">3日</option>
+                                <option value="4">4日</option>
+                                <option value="5">5日</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px;">
